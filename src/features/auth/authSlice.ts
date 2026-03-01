@@ -31,12 +31,11 @@ export const loginThunk = createAsyncThunk(
     { email, password }: { email: string; password: string },
     { dispatch }
   ) => {
-    console.log("🔐 Login started...")
+
 
     const response = await mockLoginApi(email, password)
 
-    console.log("✅ Login successful")
-    console.log("Access Token:", response.accessToken)
+
 
     dispatch(
       loginSuccess({
@@ -47,7 +46,7 @@ export const loginThunk = createAsyncThunk(
     )
 
     const expiryTime = Date.now() + response.expiresIn * 1000
-    console.log("⏳ Token expires at:", new Date(expiryTime))
+  
 
     dispatch(setExpiry(expiryTime))
 
@@ -63,27 +62,23 @@ export const refreshThunk = createAsyncThunk(
   "auth/refresh",
   async (_, { getState, dispatch, rejectWithValue }) => {
     try {
-      console.log("🔄 Attempting silent refresh...")
-
+     
       const state = getState() as any
       const refreshToken = state.auth.refreshToken
 
       const response = await mockRefreshApi(refreshToken)
 
-      console.log("✅ Token refreshed successfully")
-      console.log("New Access Token:", response.accessToken)
-
+      
       dispatch(updateAccessToken({ accessToken: response.accessToken }))
 
       const newExpiry = Date.now() + response.expiresIn * 1000
-      console.log("⏳ New expiry set at:", new Date(newExpiry))
+    
 
       dispatch(setExpiry(newExpiry))
 
       return response
     } catch (error) {
-      console.log("❌ Refresh failed. Logging out.")
-
+      
       dispatch(logout())
       return rejectWithValue("Refresh failed")
     }
@@ -121,7 +116,7 @@ const authSlice = createSlice({
     },
 
     logout: (state) => {
-      console.log("🚪 User logged out")
+
 
       state.accessToken = null
       state.refreshToken = null

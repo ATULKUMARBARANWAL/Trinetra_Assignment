@@ -108,6 +108,11 @@ const chatSlice = createSlice({
     clearChatForDocument: (state, action: PayloadAction<string>) => {
       delete state.messagesByDocument[action.payload];
     },
+
+    // 🔥 NEW: Reset entire chat (for logout)
+    resetChat: (state) => {
+      state.messagesByDocument = {};
+    },
   },
 
   extraReducers: (builder) => {
@@ -141,10 +146,15 @@ const chatSlice = createSlice({
   },
 });
 
+/* =========================================
+   Exports
+========================================= */
+
 export const {
   addMessage,
   updateMessage,
   clearChatForDocument,
+  resetChat, // 🔥 NEW EXPORT
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

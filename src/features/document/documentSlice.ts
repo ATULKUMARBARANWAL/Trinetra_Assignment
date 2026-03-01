@@ -95,6 +95,16 @@ const documentSlice = createSlice({
       state.error = null
       state.isProcessing = false
     },
+
+    /* ================================
+       🔥 NEW: Reset Documents (for logout)
+    ================================= */
+    resetDocuments: (state) => {
+      state.parsedDocs = []
+      state.activeDocumentId = null
+      state.error = null
+      state.isProcessing = false
+    },
   },
 })
 
@@ -104,7 +114,8 @@ export const {
   addParsedDoc,
   setError,
   clearDocuments,
-  setActiveDocument, // 🔥 EXPORT THIS
+  setActiveDocument,
+  resetDocuments, // 🔥 NEW EXPORT
 } = documentSlice.actions
 
 export default documentSlice.reducer

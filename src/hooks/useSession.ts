@@ -27,10 +27,10 @@ export default function useSession() {
 
     const timer = setTimeout(async () => {
       try {
-        console.log("⏳ Triggering silent refresh (5s before expiry)...")
+   
         await dispatch(refreshThunk()).unwrap()
       } catch {
-        console.log("❌ Refresh failed inside hook. Logging out.")
+       
         dispatch(logout())
         dispatch(clearSessionState())
       }

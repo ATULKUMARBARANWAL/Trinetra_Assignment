@@ -40,10 +40,7 @@ export const mockLoginApi = async (
       // 🔥 set refresh token expiry (2 minutes demo)
       refreshTokenExpiry = Date.now() + 2 * 60 * 1000
 
-      console.log(
-        "🔐 Refresh Token Expiry:",
-        new Date(refreshTokenExpiry).toLocaleTimeString()
-      )
+     
 
       resolve({
         accessToken: "mock_access_token",
@@ -64,17 +61,16 @@ export const mockRefreshApi = async (
 ): Promise<RefreshResponse> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      console.log("🔄 Attempting refresh...")
-
+     
       // ❌ invalid or expired refresh token
       if (!refreshToken) {
-        console.log("❌ No refresh token")
+      
         reject(new Error("Invalid refresh token"))
         return
       }
 
       if (Date.now() > refreshTokenExpiry) {
-        console.log("❌ Refresh token expired")
+
         reject(new Error("Refresh token expired"))
         return
       }
@@ -82,7 +78,6 @@ export const mockRefreshApi = async (
       // ✅ success
       const newAccessToken = "mock_access_token_" + Date.now()
 
-      console.log("✅ Refresh success")
 
       resolve({
         accessToken: newAccessToken,
