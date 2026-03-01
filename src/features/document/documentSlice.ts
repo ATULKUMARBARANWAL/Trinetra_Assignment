@@ -10,22 +10,58 @@ export interface ParsedDocument {
   size: number
   pageCount: number
   uploadedAt: number
-  text: string // 🔥 ADD THIS (for chat)
+  text: string
 }
 
 interface DocumentState {
   parsedDocs: ParsedDocument[]
-  activeDocumentId: string | null // 🔥 ADD THIS
+  activeDocumentId: string | null
   isProcessing: boolean
   error: string | null
 }
 
 /* =========================================
-   Initial State
+   LocalStorage Helpers
+========================================= */
+
+const DOC_KEY = "documents"
+
+// 🔥 Save documents (without heavy text if needed)
+const saveDocuments = (docs: ParsedDocument[]) => {
+  try {
+    const safeDocs = docs.map((doc) => ({
+      id: doc.id,
+      name: doc.name,
+      size: doc.size,
+      pageCount: doc.pageCount,
+      uploadedAt: doc.uploadedAt,
+      text: doc.text, // keep if needed for chat
+    }))
+
+    localStorage.setItem(DOC_KEY, JSON.stringify(safeDocs))
+  } catch (err) {
+    console.error("Error saving documents", err)
+  }
+}
+
+// 🔥 Load documents
+const loadDocuments = (): ParsedDocument[] => {
+  try {
+    if (typeof window === "undefined") return []
+
+    const data = localStorage.getItem(DOC_KEY)
+    return data ? JSON.parse(data) : []
+  } catch {
+    return []
+  }
+}
+
+/* =========================================
+   Initial State (rehydrate)
 ========================================= */
 
 const initialState: DocumentState = {
-  parsedDocs: [],
+  parsedDocs: typeof window !== "undefined" ? loadDocuments() : [],
   activeDocumentId: null,
   isProcessing: false,
   error: null,
@@ -47,10 +83,12 @@ const documentSlice = createSlice({
         (doc) => doc.id !== action.payload
       )
 
-      // 🔥 if active removed
       if (state.activeDocumentId === action.payload) {
         state.activeDocumentId = null
       }
+
+      // 🔥 persist
+      saveDocuments(state.parsedDocs)
     },
 
     /* ================================
@@ -73,10 +111,12 @@ const documentSlice = createSlice({
     addParsedDoc: (state, action: PayloadAction<ParsedDocument>) => {
       state.parsedDocs.push(action.payload)
 
-      // 🔥 auto set active if first file
       if (!state.activeDocumentId) {
         state.activeDocumentId = action.payload.id
       }
+
+      // 🔥 persist
+      saveDocuments(state.parsedDocs)
     },
 
     /* ================================
@@ -94,16 +134,22 @@ const documentSlice = createSlice({
       state.activeDocumentId = null
       state.error = null
       state.isProcessing = false
+
+      // 🔥 clear storage
+      localStorage.removeItem(DOC_KEY)
     },
 
     /* ================================
-       🔥 NEW: Reset Documents (for logout)
+       Reset Documents (for logout)
     ================================= */
     resetDocuments: (state) => {
       state.parsedDocs = []
       state.activeDocumentId = null
       state.error = null
       state.isProcessing = false
+
+      // 🔥 clear storage
+      localStorage.removeItem(DOC_KEY)
     },
   },
 })
@@ -115,7 +161,7 @@ export const {
   setError,
   clearDocuments,
   setActiveDocument,
-  resetDocuments, // 🔥 NEW EXPORT
+  resetDocuments,
 } = documentSlice.actions
 
 export default documentSlice.reducer

@@ -265,11 +265,17 @@ const id =
       )}
 
       {/* PDF Viewer */}
-      {activeFile && (
-        <div className="mt-6">
-          <PdfViewer key={activeFile.id} file={activeFile.file} />
-        </div>
-      )}
+     {activeDocumentId && activeFile && (
+  <div className="mt-6">
+    <PdfViewer key={activeFile.id} file={activeFile.file} />
+  </div>
+)}
+
+{activeDocumentId && !activeFile && (
+  <div className="mt-6 p-4 border border-yellow-600 rounded text-yellow-400">
+    PDF not available. Please re-upload the file to view.
+  </div>
+)}
     </div>
   );
 }

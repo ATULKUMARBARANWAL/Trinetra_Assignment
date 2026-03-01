@@ -1,6 +1,9 @@
+"use client";
+
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "@/core/store/rootReducer";
 import { askAI } from "./chatService";
+import { saveChat, clearChatStorage } from "@/lib/chatStorage";
 
 /* =========================================
    Types
@@ -18,15 +21,15 @@ interface ChatState {
 }
 
 /* =========================================
-   Initial State
+   Initial State (SSR SAFE)
 ========================================= */
 
 const initialState: ChatState = {
-  messagesByDocument: {},
+  messagesByDocument: {}, // 🔥 always empty (rehydrate later)
 };
 
 /* =========================================
-   Async Thunk (LOCK documentId at dispatch)
+   Async Thunk
 ========================================= */
 
 export const sendMessageThunk = createAsyncThunk<
@@ -38,7 +41,6 @@ export const sendMessageThunk = createAsyncThunk<
     try {
       const state = getState() as RootState;
 
-      // ✅ Use parsedDocs (matches your documentSlice)
       const document = state.document.parsedDocs.find(
         (doc) => doc.id === documentId
       );
@@ -47,7 +49,6 @@ export const sendMessageThunk = createAsyncThunk<
         throw new Error("Document not found");
       }
 
-      // Limit context for performance
       const context = document.text.slice(0, 2000);
 
       const response = await askAI(question, context);
@@ -71,6 +72,19 @@ const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
+    /* =========================================
+       🔥 Rehydrate Chat (IMPORTANT)
+    ========================================= */
+    setAllChats: (
+      state,
+      action: PayloadAction<Record<string, Message[]>>
+    ) => {
+      state.messagesByDocument = action.payload;
+    },
+
+    /* =========================================
+       Add Message
+    ========================================= */
     addMessage: (
       state,
       action: PayloadAction<{ documentId: string; message: Message }>
@@ -82,8 +96,14 @@ const chatSlice = createSlice({
       }
 
       state.messagesByDocument[documentId].push(message);
+
+      // 🔥 persist
+      saveChat(state.messagesByDocument);
     },
 
+    /* =========================================
+       Update Message
+    ========================================= */
     updateMessage: (
       state,
       action: PayloadAction<{
@@ -103,15 +123,29 @@ const chatSlice = createSlice({
         msg.content = content;
         msg.status = status;
       }
+
+      // 🔥 persist
+      saveChat(state.messagesByDocument);
     },
 
+    /* =========================================
+       Clear Chat for Document
+    ========================================= */
     clearChatForDocument: (state, action: PayloadAction<string>) => {
       delete state.messagesByDocument[action.payload];
+
+      // 🔥 persist
+      saveChat(state.messagesByDocument);
     },
 
-    // 🔥 NEW: Reset entire chat (for logout)
+    /* =========================================
+       Reset Chat (Logout)
+    ========================================= */
     resetChat: (state) => {
       state.messagesByDocument = {};
+
+      // 🔥 clear storage
+      clearChatStorage();
     },
   },
 
@@ -128,6 +162,9 @@ const chatSlice = createSlice({
           msg.content = answer;
           msg.status = "done";
         }
+
+        // 🔥 persist
+        saveChat(state.messagesByDocument);
       })
 
       .addCase(sendMessageThunk.rejected, (state, action: any) => {
@@ -142,6 +179,9 @@ const chatSlice = createSlice({
           msg.content = error;
           msg.status = "error";
         }
+
+        // 🔥 persist
+        saveChat(state.messagesByDocument);
       });
   },
 });
@@ -151,10 +191,11 @@ const chatSlice = createSlice({
 ========================================= */
 
 export const {
+  setAllChats, // 🔥 IMPORTANT
   addMessage,
   updateMessage,
   clearChatForDocument,
-  resetChat, // 🔥 NEW EXPORT
+  resetChat,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

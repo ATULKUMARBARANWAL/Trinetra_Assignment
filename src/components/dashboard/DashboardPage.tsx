@@ -2,20 +2,30 @@
 
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-
+import { useEffect } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PdfUploader from "@/components/pdf/PdfUploader";
 import MessageList from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import { resetDocuments } from "@/features/document/documentSlice";
 import { resetChat } from "@/features/chat/chatSlice";
-
+import { setAllChats } from "@/features/chat/chatSlice";
 import { logout } from "@/features/auth/authSlice";
-
+import { loadChat } from "@/lib/chatStorage";
 export default function DashboardPage() {
   const dispatch = useDispatch();
   const router = useRouter();
 
+
+useEffect(() => {
+  const storedChat = loadChat();
+
+  console.log("Rehydrating chat:", storedChat); // debug
+
+  if (storedChat && Object.keys(storedChat).length > 0) {
+    dispatch(setAllChats(storedChat));
+  }
+}, [dispatch]);
   const handleLogout = () => {
     // ✅ Clear Redux auth state
     dispatch(logout());
