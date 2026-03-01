@@ -23,7 +23,8 @@ Clean separation of concerns
 -   TypeScript (Strict Mode)
 -   Redux Toolkit
 -   Tailwind CSS
--   PDF.js / React-PDF
+-   React-PDF (declarative wrapper for PDF rendering)
+-   PDF.js (low-level rendering engine used by React-PDF)
 -   Axios
 -   Web Workers
 
