@@ -1,20 +1,8 @@
 import "./globals.css";
 import ReduxProvider from "@/core/providers/ReduxProvider";
 import SessionManager from "@/components/SessionManager";
-import ToastProvider from "@/components/ToastProvider";
+import ToastProvider from "@/components/ToastProvider"; // ✅ add this
 
-/* =========================================
-   Metadata (IMPORTANT)
-========================================= */
-export const metadata = {
-  title: "AI Document Chat System",
-  description:
-    "High-performance AI document chat system with secure session management and PDF processing",
-};
-
-/* =========================================
-   Root Layout
-========================================= */
 export default function RootLayout({
   children,
 }: {
@@ -22,11 +10,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-950 text-white">
+      <body>
         <ReduxProvider>
           <SessionManager>
             {children}
-            <ToastProvider />
+            <ToastProvider /> 
           </SessionManager>
         </ReduxProvider>
       </body>
