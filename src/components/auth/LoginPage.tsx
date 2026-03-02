@@ -1,108 +1,75 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "@/core/store";
-import { loginThunk } from "@/features/auth/authSlice";
-import { selectIsAuthenticated } from "@/features/auth/authSelectors";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch } from "@/core/store"
+import { loginThunk } from "@/features/auth/authSlice"
+import { selectIsAuthenticated } from "@/features/auth/authSelectors"
+import { useRouter } from "next/navigation"
+import { toast } from "react-toastify"
 
-// ✅ Import utils
-import { isValidEmail, isValidPassword } from "@/lib/utils";
+// ✅ Import from utils
+import { isValidEmail, isValidPassword } from "@/lib/utils"
 
 export default function LoginPage() {
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
 
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isAuthenticated = useSelector(selectIsAuthenticated)
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [checkingAuth, setCheckingAuth] = useState(true); // 🔥 important
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  // 🔥 FIX 1: Wait for client side (avoid SSR mismatch)
+  // 🔥 Block login page if already authenticated
   useEffect(() => {
-    setCheckingAuth(false);
-  }, []);
-
-  // 🔥 FIX 2: Redirect if already logged in
-  useEffect(() => {
-    if (!checkingAuth && isAuthenticated) {
-      router.replace("/dashboard");
+    if (isAuthenticated) {
+      router.replace("/dashboard")
     }
-  }, [isAuthenticated, checkingAuth, router]);
+  }, [isAuthenticated, router])
 
-  // 🔥 FIX 3: Prevent blank screen
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading...
-      </div>
-    );
-  }
-
-  // 🔥 FIX 4: Avoid returning null (causes black screen)
-  if (isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Redirecting...
-      </div>
-    );
-  }
+  // 🚀 Prevent login UI flash
+  if (isAuthenticated) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError("")
 
-    // ✅ Validation
+    // ✅ Email validation using utils
     if (!email) {
-      setError("Email is required");
-      toast.error("Email is required ❌");
-      return;
+      setError("Email is required")
+      toast.error("Email is required ❌")
+      return
     }
 
     if (!isValidEmail(email)) {
-      setError("Enter a valid email");
-      toast.error("Invalid email format ❌");
-      return;
+      setError("Enter a valid email")
+      toast.error("Invalid email format ❌")
+      return
     }
 
+    // ✅ Password validation using utils
     if (!isValidPassword(password)) {
-      toast.error("Password must be at least 6 characters ❌");
-      return;
+
+      toast.error("Password must be at least 6 characters ❌")
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
-    const result = await dispatch(loginThunk({ email, password }));
+    const result = await dispatch(loginThunk({ email, password }))
 
     if (loginThunk.fulfilled.match(result)) {
-      try {
-        // 🔥 FIX 5: Save token (IMPORTANT for production)
-        const token =
-          result.payload?.accessToken || result.payload?.token || "dummy-token";
-
-        if (typeof window !== "undefined") {
-          localStorage.setItem("token", token);
-        }
-
-        toast.success("Login successful 🎉");
-
-        // 🔥 Navigate
-        router.replace("/dashboard");
-      } catch (err) {
-        console.error("Token save error:", err);
-      }
+      toast.success("Login successful 🎉")
+      router.replace("/dashboard")
     } else {
-      toast.error("Invalid credentials ❌");
-      setError("Invalid credentials");
+      toast.error("Invalid credentials ❌")
+      setError("Invalid credentials")
     }
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-black to-zinc-900 px-4">
@@ -116,7 +83,8 @@ export default function LoginPage() {
           </h1>
 
           <p className="text-sm text-zinc-400 leading-relaxed">
-            Mock authentication enabled. Use any valid email like{" "}
+            Mock authentication enabled.  
+            Use any valid email like{" "}
             <span className="text-indigo-400 font-medium">
               dummy@gmail.com
             </span>{" "}
@@ -166,5 +134,5 @@ export default function LoginPage() {
         </p>
       </form>
     </div>
-  );
+  )
 }
