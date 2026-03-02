@@ -36,7 +36,7 @@ Clean separation of concerns
 
 -   Token-based authentication (Access + Refresh Token)
 -   Access token expiry: 1 minute
--   Refresh token expiry: 2 minutes
+-   Refresh token expiry: 15 minutes
 -   Silent token refresh
 -   Auto logout on token expiry
 -   Protected routes
