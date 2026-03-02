@@ -1,27 +1,31 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
-    const persist = localStorage.getItem("persist:root")
+    const persist = localStorage.getItem("persist:root");
 
     if (persist) {
-      const parsed = JSON.parse(persist)
-      const auth = JSON.parse(parsed.auth)
+      try {
+        const parsed = JSON.parse(persist);
+        const auth = JSON.parse(parsed.auth);
 
-      if (auth?.isAuthenticated) {
-        router.replace("/dashboard")
-      } else {
-        router.replace("/login")
+        if (auth?.isAuthenticated) {
+          router.replace("/dashboard");
+        } else {
+          router.replace("/login");
+        }
+      } catch {
+        router.replace("/login");
       }
     } else {
-      router.replace("/login")
+      router.replace("/login");
     }
-  }, [router])
+  }, [router]);
 
-  return <div className="text-white">Loading...</div>
+  return <div className="text-white">Loading...</div>;
 }

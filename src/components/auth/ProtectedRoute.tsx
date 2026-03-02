@@ -1,50 +1,45 @@
-"use client"
+"use client";
 
-import { useSelector, useDispatch } from "react-redux"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { selectIsAuthenticated } from "@/features/auth/authSelectors"
-import { resetDocuments } from "@/features/document/documentSlice"
-import { resetChat } from "@/features/chat/chatSlice"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ProtectedRoute({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const router = useRouter()
-  const dispatch = useDispatch()
-
-  const isAuthenticated = useSelector(selectIsAuthenticated)
-
-  const [isReady, setIsReady] = useState(false)
-
-  // 🔥 wait for hydration (important)
-  useEffect(() => {
-    setIsReady(true)
-  }, [])
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!isReady) return
+    const persist = localStorage.getItem("persist:root");
 
-    if (!isAuthenticated) {
-      dispatch(resetDocuments())
-      dispatch(resetChat())
-
-      router.replace("/login")
+    if (!persist) {
+      router.replace("/login");
+      return;
     }
-  }, [isReady, isAuthenticated, router, dispatch])
 
-  // 🔥 show loader while checking
-  if (!isReady) {
+    try {
+      const parsed = JSON.parse(persist);
+      const auth = JSON.parse(parsed.auth);
+
+      if (auth?.isAuthenticated) {
+        setReady(true);
+      } else {
+        router.replace("/login");
+      }
+    } catch {
+      router.replace("/login");
+    }
+  }, [router]);
+
+  if (!ready) {
     return (
       <div className="text-white text-center mt-10">
         Loading...
       </div>
-    )
+    );
   }
 
-  if (!isAuthenticated) return null
-
-  return <>{children}</>
+  return <>{children}</>;
 }
