@@ -2,6 +2,9 @@
   "name": "pdf-system-appppp",
   "version": "0.1.0",
   "private": true,
+   "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,6 +12,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@netlify/plugin-nextjs": "^5.15.8",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.6",
     "next": "16.1.6",
