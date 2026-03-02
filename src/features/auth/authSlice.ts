@@ -11,15 +11,46 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   user: User | null;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null; // 🔥 allow null
 }
+
+/* ================================
+   Initial State
+================================ */
 
 const initialState: AuthState = {
   accessToken: null,
   refreshToken: null,
   user: null,
-  isAuthenticated: false,
+  isAuthenticated: null, // 🔥 VERY IMPORTANT
 };
+
+/* ================================
+   INIT FROM STORAGE (NEW)
+================================ */
+
+export const initAuth = createAsyncThunk(
+  "auth/init",
+  async (_, { dispatch }) => {
+    if (typeof window === "undefined") return;
+
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const user = localStorage.getItem("user");
+
+    if (accessToken && refreshToken && user) {
+      dispatch(
+        loginSuccess({
+          accessToken,
+          refreshToken,
+          user: JSON.parse(user),
+        })
+      );
+    } else {
+      dispatch(logout());
+    }
+  }
+);
 
 /* ================================
    Login Thunk
@@ -42,7 +73,6 @@ export const loginThunk = createAsyncThunk(
     );
 
     const expiryTime = Date.now() + response.expiresIn * 1000;
-
     dispatch(setExpiry(expiryTime));
 
     return response;
@@ -65,7 +95,6 @@ export const refreshThunk = createAsyncThunk(
       dispatch(updateAccessToken({ accessToken: response.accessToken }));
 
       const newExpiry = Date.now() + response.expiresIn * 1000;
-
       dispatch(setExpiry(newExpiry));
 
       return response;
@@ -97,13 +126,12 @@ const authSlice = createSlice({
       state.refreshToken = action.payload.refreshToken;
       state.user = action.payload.user;
 
-      // 🔥 Save to localStorage + cookie (CLIENT ONLY)
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("refreshToken", action.payload.refreshToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
 
-        // 🔥 IMPORTANT: cookie for middleware
+        // 🔥 set cookie for middleware
         document.cookie = `token=${action.payload.accessToken}; Path=/; Max-Age=86400; SameSite=Lax; Secure`;
       }
     },
@@ -117,7 +145,6 @@ const authSlice = createSlice({
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", action.payload.accessToken);
 
-        // 🔥 keep cookie updated
         document.cookie = `token=${action.payload.accessToken}; Path=/; Max-Age=86400; SameSite=Lax; Secure`;
       }
     },
@@ -133,10 +160,18 @@ const authSlice = createSlice({
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
 
-        // 🔥 clear cookie
         document.cookie = "token=; Path=/; Max-Age=0; SameSite=Lax";
       }
     },
+  },
+
+  extraReducers: (builder) => {
+    builder.addCase(initAuth.fulfilled, (state) => {
+      // if loginSuccess was not called → mark as not authenticated
+      if (state.isAuthenticated === null) {
+        state.isAuthenticated = false;
+      }
+    });
   },
 });
 
