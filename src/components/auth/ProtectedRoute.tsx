@@ -2,7 +2,7 @@
 
 import { useSelector, useDispatch } from "react-redux"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { selectIsAuthenticated } from "@/features/auth/authSelectors"
 import { resetDocuments } from "@/features/document/documentSlice"
 import { resetChat } from "@/features/chat/chatSlice"
@@ -17,15 +17,32 @@ export default function ProtectedRoute({
 
   const isAuthenticated = useSelector(selectIsAuthenticated)
 
+  const [isReady, setIsReady] = useState(false)
+
+  // 🔥 wait for hydration (important)
   useEffect(() => {
+    setIsReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isReady) return
+
     if (!isAuthenticated) {
-      // 🔥 clear state when not authenticated
       dispatch(resetDocuments())
       dispatch(resetChat())
 
       router.replace("/login")
     }
-  }, [isAuthenticated, router, dispatch])
+  }, [isReady, isAuthenticated, router, dispatch])
+
+  // 🔥 show loader while checking
+  if (!isReady) {
+    return (
+      <div className="text-white text-center mt-10">
+        Loading...
+      </div>
+    )
+  }
 
   if (!isAuthenticated) return null
 
