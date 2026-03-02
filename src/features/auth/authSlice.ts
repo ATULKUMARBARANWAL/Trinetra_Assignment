@@ -119,6 +119,7 @@ const authSlice = createSlice({
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("refreshToken", action.payload.refreshToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
+        document.cookie = `token=${action.payload.accessToken}; Path=/; Max-Age=86400; SameSite=Lax`;
       }
     },
 
@@ -145,6 +146,7 @@ const authSlice = createSlice({
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
+        document.cookie = "token=; Path=/; Max-Age=0; SameSite=Lax";
       }
     },
   },
