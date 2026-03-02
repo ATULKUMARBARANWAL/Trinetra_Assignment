@@ -19,25 +19,29 @@ export default function ProtectedRoute({
 
   const [isMounted, setIsMounted] = useState(false);
 
-  // ✅ wait for hydration
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    if (isMounted && !isAuthenticated) {
-      // 🔥 clear state when not authenticated
+    if (!isMounted) return;
+
+    if (!isAuthenticated) {
       dispatch(resetDocuments());
       dispatch(resetChat());
-
       router.replace("/login");
     }
   }, [isMounted, isAuthenticated, router, dispatch]);
 
-  // ❌ prevent SSR mismatch / flicker
-  if (!isMounted) return null;
+  // ✅ Prevent blank screen
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
+  }
 
-  // ❌ block until auth ready
   if (!isAuthenticated) return null;
 
   return <>{children}</>;
