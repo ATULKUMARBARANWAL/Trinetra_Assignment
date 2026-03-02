@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
+
+  // 🔥 important for chunk loading issue
+  experimental: {
+    optimizePackageImports: ["react-pdf"],
+  },
 };
 
 export default nextConfig;
