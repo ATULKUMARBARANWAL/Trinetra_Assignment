@@ -14,27 +14,11 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-// 🔥 Restore from localStorage
-const savedAuth =
-  typeof window !== "undefined"
-    ? {
-        accessToken: localStorage.getItem("accessToken"),
-        refreshToken: localStorage.getItem("refreshToken"),
-        user: localStorage.getItem("user")
-          ? JSON.parse(localStorage.getItem("user") as string)
-          : null,
-      }
-    : {
-        accessToken: null,
-        refreshToken: null,
-        user: null,
-      };
-
 const initialState: AuthState = {
-  accessToken: savedAuth.accessToken,
-  refreshToken: savedAuth.refreshToken,
-  user: savedAuth.user,
-  isAuthenticated: !!savedAuth.accessToken,
+  accessToken: null,
+  refreshToken: null,
+  user: null,
+  isAuthenticated: false,
 };
 
 /* ================================
@@ -112,14 +96,15 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
       state.user = action.payload.user;
-      state.isAuthenticated = true;
 
-      // 🔥 Save to localStorage
+      // 🔥 Save to localStorage + cookie (CLIENT ONLY)
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("refreshToken", action.payload.refreshToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
-        document.cookie = `token=${action.payload.accessToken}; Path=/; Max-Age=86400; SameSite=Lax`;
+
+        // 🔥 IMPORTANT: cookie for middleware
+        document.cookie = `token=${action.payload.accessToken}; Path=/; Max-Age=86400; SameSite=Lax; Secure`;
       }
     },
 
@@ -129,9 +114,11 @@ const authSlice = createSlice({
     ) => {
       state.accessToken = action.payload.accessToken;
 
-      // 🔥 Update token in localStorage
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", action.payload.accessToken);
+
+        // 🔥 keep cookie updated
+        document.cookie = `token=${action.payload.accessToken}; Path=/; Max-Age=86400; SameSite=Lax; Secure`;
       }
     },
 
@@ -141,11 +128,12 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
 
-      // 🔥 Clear localStorage
       if (typeof window !== "undefined") {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
+
+        // 🔥 clear cookie
         document.cookie = "token=; Path=/; Max-Age=0; SameSite=Lax";
       }
     },
