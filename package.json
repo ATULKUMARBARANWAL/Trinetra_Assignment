@@ -2,12 +2,12 @@
   "name": "pdf-system-appppp",
   "version": "0.1.0",
   "private": true,
-   "engines": {
+  "engines": {
     "node": "18.x"
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build --no-turbo",
+    "build": "NEXT_DISABLE_TURBOPACK=1 next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -15,6 +15,7 @@
     "@netlify/plugin-nextjs": "^5.15.8",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.6",
+    "cross-env": "^10.1.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
