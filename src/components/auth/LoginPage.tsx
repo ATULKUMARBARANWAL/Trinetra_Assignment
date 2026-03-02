@@ -30,7 +30,13 @@ export default function LoginPage() {
   }, [isAuthenticated, router])
 
   // 🚀 Prevent login UI flash
-  if (isAuthenticated) return null
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        Redirecting to dashboard...
+      </div>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
