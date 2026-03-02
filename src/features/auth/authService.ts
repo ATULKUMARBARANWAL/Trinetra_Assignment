@@ -38,7 +38,7 @@ export const mockLoginApi = async (
       }
 
       // 🔥 set refresh token expiry (2 minutes demo)
-      refreshTokenExpiry = Date.now() + 2 * 60 * 1000
+      refreshTokenExpiry = Date.now() + 15 * 60 * 1000
 
      
 
